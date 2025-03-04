@@ -1,19 +1,109 @@
 require('dotenv').config();
 
+// Fetch the MongoDB URI from environment variables
+const mongoose = require('mongoose');
 
-let Person;
+const mongoURI = process.env.MONGO_URI;
 
+if (!mongoURI) {
+    console.error('Error: MONGO_URI is not defined. Check your .env file.');
+    process.exit(1);
+}
+
+mongoose.connect(mongoURI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+.then(() => console.log('Connected to MongoDB Atlas!'))
+.catch(err => console.error('Error connecting to MongoDB Atlas:', err));
+
+// Define the schema
+const personSchema = new mongoose.Schema({
+  name: String,
+  age: Number,
+  favoriteFoods: [String]
+});
+
+// Create the model
+const Person = mongoose.model("Person", personSchema);
+
+// Function to create and save a person
 const createAndSavePerson = (done) => {
-  done(null /*, data*/);
+  const newPerson = new Person({
+    name: 'John Doe',
+    age: 30,
+    favoriteFoods: ['Pizza', 'Burger']
+  });
+
+  newPerson.save((err, savedPerson) => {
+    if (err) {
+      done(err);
+    } else {
+      done(null, savedPerson);
+    }
+  });
 };
 
+// Function to find people by name
+const findPeopleByName = function(personName, done) {
+  Person.find({ name: personName }, function (err, personFound) {
+    if (err) {
+      return console.log(err);
+    }
+    done(null, personFound); // This will pass the found person to the callback
+  });
+};
+
+// Create and save a person, then search for people by name
+createAndSavePerson((err, savedPerson) => {
+  if (err) {
+    console.error('Error saving person:', err);
+  } else {
+    console.log('Saved person:', savedPerson);
+
+    // Now find the person by name using findPeopleByName
+    findPeopleByName('John Doe6', (err, personFound) => {
+      if (err) {
+        console.log('Error:', err);
+      } else {
+        console.log('Found person:', personFound);
+      }
+
+      // Close the connection after the operations are complete
+      mongoose.connection.close();
+    });
+  }
+});
+
+
+// Implement createManyPeople
 const createManyPeople = (arrayOfPeople, done) => {
-  done(null /*, data*/);
+  Person.create(arrayOfPeople, (err, savedPeople) => {
+    if (err) {
+      done(err);
+    } else {
+      done(null, savedPeople);
+    }
+  });
 };
 
-const findPeopleByName = (personName, done) => {
-  done(null /*, data*/);
-};
+// Test data
+const people = [
+  { name: 'Alice', age: 25, favoriteFoods: ['Apple', 'Banana'] },
+  { name: 'Bob', age: 30, favoriteFoods: ['Pizza', 'Pasta'] },
+  { name: 'Charlie', age: 35, favoriteFoods: ['Sushi', 'Rice'] }
+];
+
+// Call createManyPeople and log the result
+createManyPeople(people, (err, savedPeople) => {
+  if (err) {
+    console.error('Error saving people:', err);
+  } else {
+    console.log('Saved people:', savedPeople);
+  }
+  // Close the connection after operation is done
+  //mongoose.connection.close();
+});
 
 const findOneByFood = (food, done) => {
   done(null /*, data*/);
