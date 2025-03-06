@@ -101,14 +101,14 @@ router.get("/create-and-save-person", function (req, res, next) {
         return next(err);
       }
       res.json(pers);
-      pers.remove();
+      pers.deleteOne();
     });
   });
 });
 
 const createPeople = require("./myApp.js").createManyPeople;
 router.post("/create-many-people", function (req, res, next) {
-  Person.remove({}, function (err) {
+  Person.deleteMany({}, function (err) {
     if (err) {
       return next(err);
     }
@@ -130,7 +130,7 @@ router.post("/create-many-people", function (req, res, next) {
           return next(err);
         }
         res.json(pers);
-        Person.remove().exec();
+        Person.deleteMany().exec();
       });
     });
   });
@@ -155,7 +155,7 @@ router.post("/find-all-by-name", function (req, res, next) {
         return next({ message: "Missing callback argument" });
       }
       res.json(data);
-      Person.remove().exec();
+      Person.deleteOne().exec();
     });
   });
 });
@@ -180,7 +180,7 @@ router.post("/find-one-by-food", function (req, res, next) {
         return next({ message: "Missing callback argument" });
       }
       res.json(data);
-      p.remove();
+      p.deleteOne();
     });
   });
 });
@@ -205,7 +205,7 @@ router.get("/find-by-id", function (req, res, next) {
         return next({ message: "Missing callback argument" });
       }
       res.json(data);
-      p.remove();
+      p.deleteOne();
     });
   });
 });
@@ -231,7 +231,7 @@ router.post("/find-edit-save", function (req, res, next) {
           return next({ message: "Missing callback argument" });
         }
         res.json(data);
-        p.remove();
+        p.deleteOne();
       });
     } catch (e) {
       console.log(e);
@@ -261,7 +261,7 @@ router.post("/find-one-update", function (req, res, next) {
           return next({ message: "Missing callback argument" });
         }
         res.json(data);
-        p.remove();
+        p.deleteOne();
       });
     } catch (e) {
       console.log(e);
@@ -271,8 +271,8 @@ router.post("/find-one-update", function (req, res, next) {
 });
 
 const removeOne = require("./myApp.js").removeById;
-router.post("/remove-one-person", function (req, res, next) {
-  Person.remove({}, function (err) {
+router.post("/t-one-person", function (req, res, next) {
+  Person.deleteOne({}, function (err) {
     if (err) {
       return next(err);
     }
@@ -285,7 +285,7 @@ router.post("/remove-one-person", function (req, res, next) {
         return next(err);
       }
       try {
-        removeOne(pers._id, function (err, data) {
+        deleteOne(pers._id, function (err, data) {
           clearTimeout(t);
           if (err) {
             return next(err);
@@ -313,9 +313,9 @@ router.post("/remove-one-person", function (req, res, next) {
   });
 });
 
-const removeMany = require("./myApp.js").removeManyPeople;
+const removeMany = require("./myApp.js").deleteMany;
 router.post("/remove-many-people", function (req, res, next) {
-  Person.remove({}, function (err) {
+  Person.deleteOne({}, function (err) {
     if (err) {
       return next(err);
     }
@@ -327,7 +327,7 @@ router.post("/remove-many-people", function (req, res, next) {
         return next(err);
       }
       try {
-        removeMany(function (err, data) {
+        deleteMany(function (err, data) {
           clearTimeout(t);
           if (err) {
             return next(err);
@@ -418,7 +418,7 @@ app.use(function (req, res) {
   }
 });
 
-const listener = app.listen(process.env.PORT || 3211, function () {
+const listener = app.listen(process.env.PORT || 3000, function () {
   console.log("Your app is listening on port " + listener.address().port);
 });
 
