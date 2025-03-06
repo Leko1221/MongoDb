@@ -17,129 +17,128 @@ mongoose.connect(mongoURI, {
 .then(() => console.log('Connected to MongoDB Atlas!'))
 .catch(err => console.error('Error connecting to MongoDB Atlas:', err));
 
-// Define the schema
-const personSchema = new mongoose.Schema({
+/** 2) Create a 'Person' Model */
+var personSchema = new mongoose.Schema({
   name: String,
   age: Number,
   favoriteFoods: [String]
 });
 
-// Create the model
-const Person = mongoose.model("Person", personSchema);
+/** 3) Create and Save a Person */
+var Person = mongoose.model('Person', personSchema);
 
-// Function to create and save a person
-const createAndSavePerson = (done) => {
-  const newPerson = new Person({
-    name: 'John Doe',
-    age: 30,
-    favoriteFoods: ['Pizza', 'Burger']
-  });
+var createAndSavePerson = function(done) {
+  var janeFonda = new Person({name: "Jane Fonda", age: 84, favoriteFoods: ["eggs", "fish", "fresh fruit"]});
 
-  newPerson.save((err, savedPerson) => {
-    if (err) {
-      done(err);
-    } else {
-      done(null, savedPerson);
-    }
+  janeFonda.save(function(err, data) {
+    if (err) return console.error(err);
+    done(null, data)
   });
 };
 
-// Function to find people by name
-const findPeopleByName = function(personName, done) {
-  Person.find({ name: personName }, function (err, personFound) {
-    if (err) {
-      return console.log(err);
-    }
-    done(null, personFound); // This will pass the found person to the callback
-  });
-};
-
-// Create and save a person, then search for people by name
-createAndSavePerson((err, savedPerson) => {
-  if (err) {
-    console.error('Error saving person:', err);
-  } else {
-    console.log('Saved person:', savedPerson);
-
-    // Now find the person by name using findPeopleByName
-    findPeopleByName('John Doe6', (err, personFound) => {
-      if (err) {
-        console.log('Error:', err);
-      } else {
-        console.log('Found person:', personFound);
-      }
-
-      // Close the connection after the operations are complete
-      mongoose.connection.close();
-    });
-  }
-});
-
-
-// Implement createManyPeople
-const createManyPeople = (arrayOfPeople, done) => {
-  Person.create(arrayOfPeople, (err, savedPeople) => {
-    if (err) {
-      done(err);
-    } else {
-      done(null, savedPeople);
-    }
-  });
-};
-
-// Test data
-const people = [
-  { name: 'Alice', age: 25, favoriteFoods: ['Apple', 'Banana'] },
-  { name: 'Bob', age: 30, favoriteFoods: ['Pizza', 'Pasta'] },
-  { name: 'Charlie', age: 35, favoriteFoods: ['Sushi', 'Rice'] }
+/** 4) Create many People with `Model.create()` */
+var arrayOfPeople = [
+  {name: "Frankie", age: 74, favoriteFoods: ["Del Taco"]},
+  {name: "Sol", age: 76, favoriteFoods: ["roast chicken"]},
+  {name: "Robert", age: 78, favoriteFoods: ["wine"]}
 ];
 
-// Call createManyPeople and log the result
-createManyPeople(people, (err, savedPeople) => {
-  if (err) {
-    console.error('Error saving people:', err);
-  } else {
-    console.log('Saved people:', savedPeople);
-  }
-  // Close the connection after operation is done
-  //mongoose.connection.close();
-});
-
-const findOneByFood = (food, done) => {
-  done(null /*, data*/);
+var createManyPeople = function(arrayOfPeople, done) {
+  Person.create(arrayOfPeople, function (err, people) {
+    if (err) return console.log(err);
+    done(null, people);
+  });
 };
 
-const findPersonById = (personId, done) => {
-  done(null /*, data*/);
+/** 5) Use `Model.find()` */
+var findPeopleByName = function(personName, done) {
+  Person.find({name: personName}, function (err, personFound) {
+    if (err) return console.log(err);
+    done(null, personFound);
+  });
+};
+
+/** 6) Use `Model.findOne()` */
+var findOneByFood = function(food, done) {
+  Person.findOne({favoriteFoods: food}, function (err, data) {
+    if (err) return console.log(err);
+    done(null, data);
+  });
+};
+
+var findPersonById = function(personId, done) {
+  Person.findById(personId, function (err, data){
+    if (err) return console.log(err);
+    done(null, data);
+  });
 };
 
 const findEditThenSave = (personId, done) => {
-  const foodToAdd = "hamburger";
+  const foodToAdd = 'hamburger';
 
-  done(null /*, data*/);
+  // .findById() method to find a person by _id with the parameter personId as search key. 
+  Person.findById(personId, (err, person) => {
+    if(err) return console.log(err); 
+  
+    // Array.push() method to add "hamburger" to the list of the person's favoriteFoods
+    person.favoriteFoods.push(foodToAdd);
+
+    // and inside the find callback - save() the updated Person.
+    person.save((err, updatedPerson) => {
+      if(err) return console.log(err);
+      done(null, updatedPerson)
+    })
+  })
 };
 
 const findAndUpdate = (personName, done) => {
   const ageToSet = 20;
 
-  done(null /*, data*/);
+  Person.findOneAndUpdate({name: personName}, {age: ageToSet}, {new: true}, (err, updatedDoc) => {
+    if(err) return console.log(err);
+    done(null, updatedDoc);
+  })
 };
 
-const removeById = (personId, done) => {
-  done(null /*, data*/);
+var removeById = function(personId, done) {
+  Person.findByIdAndDelete(
+    personId,
+    (err, removedDoc) => {
+      if(err) return console.log(err);
+      done(null, removedDoc);
+    }
+  ); 
 };
 
 const removeManyPeople = (done) => {
-  const nameToRemove = "Mary";
-
-  done(null /*, data*/);
+  const nameToRemove = "Joe";
+  Person.deleteMany({name: nameToRemove}, (err, response) => {
+    if(err) return console.log(err);
+    done(null, response);
+  })
 };
 
 const queryChain = (done) => {
   const foodToSearch = "burrito";
-
-  done(null /*, data*/);
+  let result = Person.find({favoriteFoods: foodToSearch})
+  .sort({name: 1})
+  .limit(2)
+  .select({age: 0})
+  .exec((err, data) => {
+    if (err) return done(err);
+    done(null, data);
+  });
 };
+
+//Example usage
+/*queryChain()
+  .then((data) => {
+    console.log("Data found:", data);
+  })
+  .catch((err) => {
+    console.log("Error:", err);
+  });
+  */
 
 /** **Well Done !!**
 /* You completed these challenges, let's go celebrate !
